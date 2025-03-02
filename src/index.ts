@@ -2,9 +2,10 @@ import { Elysia, t } from "elysia";
 import { ethplorerInstance, instance } from "../http";
 import { db } from "./db";
 import { snapshotsTable, tokensTable } from "./db/schema";
-import { desc, eq } from "drizzle-orm";
+import { between, desc, eq, sql } from "drizzle-orm";
 import Token from "./types";
 import cors from "@elysiajs/cors";
+import dayjs from "dayjs";
 
 const app = new Elysia()
   .use(cors({ origin: "localhost" }))
@@ -12,6 +13,55 @@ const app = new Elysia()
   .get("/hi", () => {
     return "hello from backend";
   })
+  .get(
+    "/TopByVolume",
+    async ({ query: { firstDate, secondDate } }) => {
+      const from = dayjs(firstDate);
+      const to = dayjs(secondDate);
+      const query = await db
+        .selectDistinctOn([snapshotsTable.currencyName], {
+          currencyName: snapshotsTable.currencyName,
+          created: snapshotsTable.created,
+          contract: snapshotsTable.contract,
+          volume: snapshotsTable.volume,
+          percentageChange: sql`
+          ((volume - LAG(volume) OVER (PARTITION BY ${snapshotsTable.currencyName.name} ORDER BY created)) 
+           / NULLIF(LAG(volume) OVER (PARTITION BY ${snapshotsTable.currencyName.name} ORDER BY created), 0)) 
+          * 100
+        `,
+          valueChange: sql<number>`
+        CASE
+          WHEN LAG(volume) OVER (PARTITION BY ${snapshotsTable.contract} ORDER BY created) IS NULL THEN NULL
+          ELSE (volume::NUMERIC - LAG(volume) OVER (PARTITION BY ${snapshotsTable.contract} ORDER BY created))
+        END
+      `,
+        })
+        .from(snapshotsTable)
+        .where(between(snapshotsTable.created, from.toDate(), to.toDate()));
+
+      //   const snapshots = await db
+      //     .select({
+      //       percentage: sql`CASE
+      //   WHEN ${snapshotsTable.volume_from} = 0 THEN NULL
+      //   ELSE ROUND(
+      //     ((${tables.your_table.volume_to} - ${tables.your_table.volume_from}) / ${tables.your_table.volume_from}) * 100,
+      //     2
+      //   )
+      // END`,
+      //     })
+      //     .from(snapshotsTable)
+      //     .where(between(snapshotsTable.created, from.toDate(), to.toDate()))
+      //     .orderBy(desc(snapshotsTable.volume));
+
+      return query;
+    },
+    {
+      query: t.Object({
+        firstDate: t.String(),
+        secondDate: t.String(),
+      }),
+    }
+  )
   .get("/Top", async ({ set }) => {
     try {
       console.log("req");

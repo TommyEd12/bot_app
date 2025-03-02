@@ -10,7 +10,7 @@ export const instance = axios.create({
 
 export const ethplorerInstance = axios.create({
   baseURL: "https://api.ethplorer.io",
-  timeout: 5000,
+  timeout: 15000,
   headers: {
     Accept: "text/plain",
   },

@@ -17,5 +17,6 @@ export const snapshotsTable = pgTable("snapshots", {
   currencyName: varchar().references(() => tokensTable.name),
   price: real(),
   volume: real(),
+  countOps: integer(),
   created: timestamp({ withTimezone: true }),
 });

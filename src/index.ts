@@ -2,16 +2,34 @@ import { Elysia, t } from "elysia";
 import { ethplorerInstance, instance } from "../http";
 import { db } from "./db";
 import { snapshotsTable, tokensTable } from "./db/schema";
-import { between, desc, eq, sql } from "drizzle-orm";
-import Token from "./types";
+import { between, desc, eq, ne, sql } from "drizzle-orm";
+import Token, { TokenInfo } from "./types";
 import cors from "@elysiajs/cors";
 import dayjs from "dayjs";
 
-const app = new Elysia()
+const app = new Elysia({ prefix: "/api" })
   .use(cors({ origin: "localhost" }))
   .get("/", () => "Hello Elysia")
   .get("/hi", () => {
     return "hello from backend";
+  })
+  .get("/topByOperations", async () => {
+    const tokens = await db
+      .select()
+      .from(tokensTable)
+      .where(ne(tokensTable.contract, ""));
+
+
+    for (const token of tokens) {
+      const response: TokenInfo = await ethplorerInstance.get(
+        `/getTokenInfo/${token.contract}`,
+        {
+          params: { apiKey: "freekey" },
+        }
+      );
+      
+      
+    }
   })
   .get(
     "/TopByVolume",
@@ -78,7 +96,7 @@ const app = new Elysia()
           currencyName: token.name,
           contract: token.address,
           price: token.price.rate,
-          volume: token.volume,
+          volume: token.price.marketCapUsd,
           created: new Date(Date.now()),
         });
       }

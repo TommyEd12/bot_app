@@ -22,6 +22,25 @@ interface Token {
   "cap-30d-previous-ts": number;
   price: Price;
 }
+export interface TokenInfo {
+  address: string;
+  decimals: string;
+  lastUpdated: number;
+  name: string;
+  owner: string;
+  price: boolean;
+  symbol: string;
+  totalSupply: string;
+  transfersCount: number;
+  txsCount: number;
+  issuancesCount: number;
+  holdersCount: number;
+  website?: string; // Make optional if it can be absent
+  image?: string; // Make optional if it can be absent
+  ethTransfersCount: number;
+  countOps: number;
+  description?: string; // Make optional if it can be absent
+}
 
 interface Price {
   rate: number;

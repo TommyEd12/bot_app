@@ -41,6 +41,11 @@ export interface TokenInfo {
   countOps: number;
   description?: string; // Make optional if it can be absent
 }
+export interface schemaToken {
+  id: number;
+  contract: string | null;
+  name: string;
+}
 
 interface Price {
   rate: number;

@@ -2,10 +2,12 @@ import { Elysia, t } from "elysia";
 import { ethplorerInstance, instance } from "../http";
 import { db } from "./db";
 import { snapshotsTable, tokensTable } from "./db/schema";
-import { between, desc, eq, ne, sql } from "drizzle-orm";
+import { and, between, desc, eq, max, ne, sql } from "drizzle-orm";
 import Token, { TokenInfo } from "./types";
 import cors from "@elysiajs/cors";
 import dayjs from "dayjs";
+import { AxiosPromise, AxiosResponse } from "axios";
+import operationsRoutes from "./routes/operationsRoutes";
 
 const app = new Elysia({ prefix: "/api" })
   .use(cors({ origin: "localhost" }))
@@ -13,24 +15,40 @@ const app = new Elysia({ prefix: "/api" })
   .get("/hi", () => {
     return "hello from backend";
   })
-  .get("/topByOperations", async () => {
-    const tokens = await db
-      .select()
-      .from(tokensTable)
-      .where(ne(tokensTable.contract, ""));
+  // .get("/topByOperations", async () => {
+  //   const tokens = await db
+  //     .select()
+  //     .from(tokensTable)
+  //     .where(ne(tokensTable.contract, ""));
 
+  //   for (const token of tokens.slice(0, 10)) {
+  //     const response: AxiosResponse = await ethplorerInstance.get(
+  //       `/getTokenInfo/${token.contract}`,
+  //       {
+  //         params: { apiKey: "EK-utfXc-Vq1QhUf-j355L" },
+  //       }
+  //     );
+  //     const tokenData: TokenInfo = await response.data;
+  //     const latestSnapshot = await db
+  //       .select({ id: snapshotsTable.id })
+  //       .from(snapshotsTable)
+  //       .where(eq(snapshotsTable.contract, tokenData.address))
+  //       .orderBy(desc(snapshotsTable.created))
+  //       .limit(1)
+  //       .then((result) => result[0]?.id);
 
-    for (const token of tokens) {
-      const response: TokenInfo = await ethplorerInstance.get(
-        `/getTokenInfo/${token.contract}`,
-        {
-          params: { apiKey: "freekey" },
-        }
-      );
-      
-      
-    }
-  })
+  //     if (latestSnapshot) {
+  //       await db
+  //         .update(snapshotsTable)
+  //         .set({ countOps: tokenData.countOps })
+  //         .where(eq(snapshotsTable.id, latestSnapshot));
+  //     } else {
+  //       console.warn(
+  //         `No snapshots found for token contract: ${tokenData.address}`
+  //       );
+  //     }
+  //   }
+  // })
   .get(
     "/TopByVolume",
     async ({ query: { firstDate, secondDate } }) => {
@@ -171,6 +189,7 @@ const app = new Elysia({ prefix: "/api" })
       }),
     }
   )
+  .group("", (app) => app.use(operationsRoutes))
   .listen(5000);
 
 console.log(

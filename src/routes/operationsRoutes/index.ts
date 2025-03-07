@@ -13,7 +13,7 @@ async function updateCountOpsBatch(tokens: schemaToken[]): Promise<void> {
       const response = await ethplorerInstance.get(
         `/getTokenInfo/${token.contract}`,
         {
-          params: { apiKey: "EK-utfXc-Vq1QhUf-j355L" },
+          params: { apiKey: process.env.API_KEY },
         }
       );
 
@@ -38,16 +38,15 @@ async function updateCountOpsBatch(tokens: schemaToken[]): Promise<void> {
       }
     } catch (error: any) {
       console.error(
-        `Error updating countOps for token ${token.contract}:,
-        error`
+        `Error updating countOps for token ${token.contract}:`,
+        error
       );
       if (error.response) {
         if (error.response.status === 404) {
           console.warn(`Token ${token.contract} not found in Ethplorer`);
         } else {
           console.error(
-            `Ethplorer API returned error: ${error.response.status} ${error.response.statusText}
-          `
+            `Ethplorer API returned error: ${error.response.status} ${error.response.statusText}`
           );
         }
       }
@@ -56,26 +55,31 @@ async function updateCountOpsBatch(tokens: schemaToken[]): Promise<void> {
 }
 
 const operationsRoutes = new Elysia({ prefix: "/operations" })
-  .decorate({ offset: 10 })
   .use(
     cron({
       name: "updateCountOps",
-      pattern: "*/5 * * * *",
-      async run() {
+      pattern: "*/1 * * * *",
+      context: { offset: 0 },
+      async run(self) {
         try {
+          const offset = self.cron.updateCountOps.options.context.offset;
+          console.log(offset);
+
           const tokens = await db
             .select()
             .from(tokensTable)
             .where(ne(tokensTable.contract, ""))
             .orderBy(tokensTable.name)
-            .limit(10);
-
+            .limit(10)
+            .offset(offset);
           if (tokens.length > 0) {
             await updateCountOpsBatch(tokens);
             console.log("Cron job 'updateCountOps' ran successfully");
             console.log(tokens);
+            self.cron.updateCountOps.options.context.offset += 10;
           } else {
             console.log("No tokens found in database.");
+            self.cron.updateCountOps.options.context.offset = 0;
           }
         } catch (error) {
           console.error("Error in cron job 'updateCountOps':", error);
@@ -84,7 +88,7 @@ const operationsRoutes = new Elysia({ prefix: "/operations" })
     })
   )
   .get(
-    "/topByOperations",
+    "/startFetchingOperations",
     async ({
       store: {
         cron: { updateCountOps },

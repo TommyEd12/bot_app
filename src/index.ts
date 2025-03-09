@@ -8,6 +8,7 @@ import cors from "@elysiajs/cors";
 import dayjs from "dayjs";
 import { AxiosPromise, AxiosResponse } from "axios";
 import operationsRoutes from "./routes/operationsRoutes";
+import metricsRoutes from "./routes/metricsRoutes";
 
 const app = new Elysia({ prefix: "/api" })
   .use(cors({ origin: "localhost" }))
@@ -190,6 +191,7 @@ const app = new Elysia({ prefix: "/api" })
     }
   )
   .group("", (app) => app.use(operationsRoutes))
+  .group("", (app) => app.use(metricsRoutes))
   .listen(5000);
 
 console.log(

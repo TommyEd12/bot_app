@@ -52,7 +52,7 @@ const app = new Elysia({ prefix: "/api" })
   // })
   .get(
     "/TopByVolume",
-    async ({ query: { firstDate, secondDate } }) => {
+    async ({ query: { firstDate, secondDate }, set }) => {
       const from = dayjs(firstDate);
       const to = dayjs(secondDate);
       const query = await db
@@ -61,37 +61,36 @@ const app = new Elysia({ prefix: "/api" })
           created: snapshotsTable.created,
           contract: snapshotsTable.contract,
           volume: snapshotsTable.volume,
-          percentageChange: sql`
-          ((volume - LAG(volume) OVER (PARTITION BY ${snapshotsTable.currencyName.name} ORDER BY created)) 
-           / NULLIF(LAG(volume) OVER (PARTITION BY ${snapshotsTable.currencyName.name} ORDER BY created), 0)) 
-          * 100
-        `,
           valueChange: sql<number>`
-        CASE
-          WHEN LAG(volume) OVER (PARTITION BY ${snapshotsTable.contract} ORDER BY created) IS NULL THEN NULL
-          ELSE (volume::NUMERIC - LAG(volume) OVER (PARTITION BY ${snapshotsTable.contract} ORDER BY created))
-        END
+          CASE
+            WHEN LAG(${snapshotsTable.volume}) OVER (PARTITION BY ${snapshotsTable.contract} ORDER BY created) IS NULL THEN NULL
+            ELSE (${snapshotsTable.volume}::NUMERIC - LAG(${snapshotsTable.volume}) OVER (PARTITION BY ${snapshotsTable.contract} ORDER BY created))
+          END
       `,
         })
         .from(snapshotsTable)
         .where(between(snapshotsTable.created, from.toDate(), to.toDate()));
 
-      //   const snapshots = await db
-      //     .select({
-      //       percentage: sql`CASE
-      //   WHEN ${snapshotsTable.volume_from} = 0 THEN NULL
-      //   ELSE ROUND(
-      //     ((${tables.your_table.volume_to} - ${tables.your_table.volume_from}) / ${tables.your_table.volume_from}) * 100,
-      //     2
-      //   )
-      // END`,
-      //     })
-      //     .from(snapshotsTable)
-      //     .where(between(snapshotsTable.created, from.toDate(), to.toDate()))
-      //     .orderBy(desc(snapshotsTable.volume));
-
-      return query;
+      if (query) {
+        for (let res of query) {
+          if (res.volume) {
+            Object.assign(res, {
+              percentageChange: (
+                (res.valueChange / res.volume) *
+                100
+              ).toPrecision(6),
+            });
+          } else {
+            Object.assign(res, {
+              percentageChange: null,
+            });
+          }
+        }
+        set.status = 200;
+        return query;
+      }
     },
+
     {
       query: t.Object({
         firstDate: t.String(),

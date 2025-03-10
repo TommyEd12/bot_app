@@ -18,13 +18,11 @@ const metricsRoutes = new Elysia({ prefix: "/metrics" }).get(
           contract: snapshotsTable.contract,
           countOps: snapshotsTable.countOps,
           valueChange: sql<number>`
-            COALESCE(${snapshotsTable.countOps} - LAG(${snapshotsTable.countOps}, 1, 0) OVER (PARTITION BY ${snapshotsTable.currencyName} ORDER BY created), 0)
-          `,
-          percentageChange: sql`
-              ((${snapshotsTable.countOps} - LAG(${snapshotsTable.countOps}) OVER (PARTITION BY ${snapshotsTable.currencyName.name} ORDER BY created)) 
-               / NULLIF(LAG(${snapshotsTable.countOps}) OVER (PARTITION BY ${snapshotsTable.currencyName.name} ORDER BY created), 0)) 
-              * 100
-            `,
+          CASE
+            WHEN LAG(${snapshotsTable.countOps}) OVER (PARTITION BY ${snapshotsTable.contract} ORDER BY created) IS NULL THEN NULL
+            ELSE (${snapshotsTable.countOps}::NUMERIC - LAG(${snapshotsTable.countOps}) OVER (PARTITION BY ${snapshotsTable.contract} ORDER BY created))
+          END
+        `,
         })
         .from(snapshotsTable)
         .where(
@@ -35,6 +33,20 @@ const metricsRoutes = new Elysia({ prefix: "/metrics" }).get(
         );
 
       if (query) {
+        for (let res of query) {
+          if (res.countOps) {
+            Object.assign(res, {
+              percentageChange: (
+                (res.valueChange / res.countOps) *
+                100
+              ).toPrecision(6),
+            });
+          } else {
+            Object.assign(res, {
+              percentageChange: null,
+            });
+          }
+        }
         set.status = 200;
         return query;
       }

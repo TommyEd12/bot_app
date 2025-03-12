@@ -28,7 +28,7 @@ export interface TokenInfo {
   lastUpdated: number;
   name: string;
   owner: string;
-  price: boolean;
+  price: Price;
   symbol: string;
   totalSupply: string;
   transfersCount: number;

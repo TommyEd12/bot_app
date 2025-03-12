@@ -9,6 +9,8 @@ import dayjs from "dayjs";
 import { AxiosPromise, AxiosResponse } from "axios";
 import operationsRoutes from "./routes/operationsRoutes";
 import metricsRoutes from "./routes/metricsRoutes";
+import { userRequest } from "telegraf/typings/button";
+import { userRoutes } from "./routes/userRoutes";
 
 const app = new Elysia({ prefix: "/api" })
   .use(cors({ origin: "localhost" }))
@@ -191,6 +193,7 @@ const app = new Elysia({ prefix: "/api" })
   )
   .group("", (app) => app.use(operationsRoutes))
   .group("", (app) => app.use(metricsRoutes))
+  .group("", (app)=> app.use(userRoutes))
   .listen(5000);
 
 console.log(

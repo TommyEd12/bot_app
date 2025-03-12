@@ -8,6 +8,7 @@
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",
     "@elysiajs/cron": "^1.2.0",
+    "@elysiajs/jwt": "^1.2.0",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.3",

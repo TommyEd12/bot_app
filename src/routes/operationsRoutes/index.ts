@@ -6,6 +6,7 @@ import { desc, eq, ne } from "drizzle-orm";
 import { snapshotsTable, tokensTable } from "../../db/schema";
 import { ethplorerInstance } from "../../../http";
 import { schemaToken, TokenInfo } from "../../types";
+import { AuthService } from "../../services/authService";
 
 async function updateCountOpsBatch(tokens: schemaToken[]): Promise<void> {
   for (const token of tokens) {
@@ -18,24 +19,14 @@ async function updateCountOpsBatch(tokens: schemaToken[]): Promise<void> {
       );
 
       const tokenData: TokenInfo = response.data;
-      const latestSnapshot = await db
-        .select({ id: snapshotsTable.id })
-        .from(snapshotsTable)
-        .where(eq(snapshotsTable.contract, tokenData.address))
-        .orderBy(desc(snapshotsTable.created))
-        .limit(1)
-        .then((result) => result[0]?.id);
-
-      if (latestSnapshot) {
-        await db
-          .update(snapshotsTable)
-          .set({ countOps: tokenData.countOps })
-          .where(eq(snapshotsTable.id, latestSnapshot));
-      } else {
-        console.warn(
-          `No snapshots found for token contract: ${tokenData.address}`
-        );
-      }
+      await db.insert(snapshotsTable).values({
+        contract: tokenData.address,
+        currencyName: tokenData.name,
+        price: tokenData.price.rate,
+        volume: tokenData.price.marketCapUsd,
+        countOps: tokenData.countOps,
+        created: new Date(Date.now()),
+      });
     } catch (error: any) {
       console.error(
         `Error updating countOps for token ${token.contract}:`,
@@ -55,6 +46,7 @@ async function updateCountOpsBatch(tokens: schemaToken[]): Promise<void> {
 }
 
 const operationsRoutes = new Elysia({ prefix: "/operations" })
+  .use(AuthService)
   .use(
     cron({
       name: "updateCountOps",
@@ -101,6 +93,54 @@ const operationsRoutes = new Elysia({ prefix: "/operations" })
       set.status = 200;
       return statusNow;
     }
+  )
+  .post(
+    "/addToken",
+    async ({ body, set }) => {
+      try {
+        const isTokenExist = await db
+          .select()
+          .from(tokensTable)
+          .where(eq(tokensTable.contract, body.tokenAddress));
+        if (isTokenExist.length > 0) {
+          throw new Error("Данный токен уже есть в нашей базе!");
+        }
+        const response = await ethplorerInstance.get(
+          `/getTokenInfo/${body.tokenAddress}`,
+          {
+            params: { apiKey: process.env.API_KEY },
+          }
+        );
+        if (!response.data) {
+          throw new Error("Такого контракта нет в базе Ethplorer");
+        }
+
+        const tokenData: TokenInfo = response.data;
+
+        await db
+          .insert(tokensTable)
+          .values({ name: tokenData.name, contract: tokenData.address });
+        const res = await db.insert(snapshotsTable).values({
+          contract: tokenData.address,
+          currencyName: tokenData.name,
+          price: tokenData.price.rate,
+          volume: tokenData.price.marketCapUsd,
+          countOps: tokenData.countOps,
+          created: new Date(Date.now()),
+        });
+        
+        return res;
+      } catch (e) {
+        set.status = 500;
+        return (e as Error).message;
+      }
+    },
+    {
+      body: t.Object({
+        tokenAddress: t.String(),
+      }),
+      isSignIn:true 
+    }, 
   );
 
 export default operationsRoutes;

@@ -1,3 +1,4 @@
+import { password } from "bun";
 import {
   integer,
   pgTable,
@@ -10,6 +11,11 @@ export const tokensTable = pgTable("tokens", {
   id: integer().generatedAlwaysAsIdentity(),
   contract: varchar().unique(),
   name: varchar({ length: 255 }).notNull().primaryKey(),
+});
+export const usersTable = pgTable("users", {
+  id: integer().generatedAlwaysAsIdentity().primaryKey(),
+  password: varchar().notNull(),
+  userName: varchar().unique().notNull(),
 });
 export const snapshotsTable = pgTable("snapshots", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),

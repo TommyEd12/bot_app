@@ -1,11 +1,15 @@
 import { Elysia, t } from "elysia";
 import { db } from "../../db";
 
-import { and, between, eq, isNotNull, ne, sql } from "drizzle-orm";
+import { and, between, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { snapshotsTable, tokensTable } from "../../db/schema";
 import dayjs from "dayjs";
 
 const metricsRoutes = new Elysia({ prefix: "/metrics" })
+  .get("/streams", async () => {
+    const tokens = await db.select().from(tokensTable);
+    return tokens;
+  })
   .get(
     "/topByOperations",
     async ({ query: { firstDate, secondDate }, set }) => {
@@ -64,7 +68,7 @@ const metricsRoutes = new Elysia({ prefix: "/metrics" })
     }
   )
   .get(
-    "tokenMetrics",
+    "/tokenMetrics",
     async ({ query: { tokenAddress }, set }) => {
       try {
         const snapshots = await db

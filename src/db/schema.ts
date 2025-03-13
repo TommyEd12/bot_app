@@ -9,8 +9,8 @@ import {
 } from "drizzle-orm/pg-core";
 export const tokensTable = pgTable("tokens", {
   id: integer().generatedAlwaysAsIdentity(),
-  contract: varchar().unique(),
-  name: varchar({ length: 255 }).notNull().primaryKey(),
+  contract: varchar().unique().primaryKey(),
+  name: varchar({ length: 255 }).notNull(),
 });
 export const usersTable = pgTable("users", {
   id: integer().generatedAlwaysAsIdentity().primaryKey(),

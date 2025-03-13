@@ -50,7 +50,7 @@ const operationsRoutes = new Elysia({ prefix: "/operations" })
   .use(
     cron({
       name: "updateCountOps",
-      pattern: "*/3 * * * *",
+      pattern: "*/2 * * * *",
       context: { offset: 0 },
       async run(self) {
         try {

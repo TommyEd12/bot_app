@@ -21,7 +21,7 @@ jobs:
           port: 22
           script: |
     
-            cd /var/www/bunA || exit 1
+            cd /var/www/bunApp || exit 1
 
             git fetch --all --prune
             git reset --hard origin/master  # Принудительный сброс [[10]]

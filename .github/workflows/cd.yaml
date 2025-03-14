@@ -2,7 +2,7 @@ name: CI/CD with Server Deployment
 
 on:
   push:
-    branches: [master]
+    branches: [master]  # Триггер на пуш в ветку master [[2]][[5]]
 
 jobs:
   deploy:
@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  # [[5]]
 
       - name: Deploy to server
         uses: appleboy/ssh-action@master
@@ -20,14 +20,13 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
+    
             cd /var/www/bunApp || exit 1
 
-            # Ensure git remote is set up correctly 
-            
             git fetch --all --prune
-            git reset --hard /master || exit 1
-            git pull master || exit 1
+            git reset --hard origin/master  # Принудительный сброс [[10]]
+            git pull origin master
 
-            # Ensure Docker commands work
-            docker compose down || exit 1
-            docker compose up -d --build || exit 1
+            docker compose down
+            docker compose up -d --build  # [[3]][[6]]
+     

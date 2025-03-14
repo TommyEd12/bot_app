@@ -23,7 +23,7 @@ jobs:
             cd /var/www/bunApp || exit 1
 
             # Ensure git remote is set up correctly
-            git remote add origin <repository-url> || true
+            git remote add origin <https://github.com/TommyEd12/bot_app.git> 
             
             git fetch --all --prune
             git reset --hard origin/master || exit 1

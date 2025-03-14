@@ -20,8 +20,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            cd ../
-            cd /var/www/my-project || exit 1
+    
+            cd /var/www/bunApp || exit 1
 
             git fetch --all --prune
             git reset --hard origin/master  # Принудительный сброс [[10]]

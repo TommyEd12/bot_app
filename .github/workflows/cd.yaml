@@ -20,6 +20,13 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            ls
-           
+    
+            cd /var/www/bunApp || exit 1
+
+            git fetch --all --prune
+            git reset --hard origin/master  # Принудительный сброс [[10]]
+            git pull origin master
+
+            docker compose down
+            docker compose up -d --build  # [[3]][[6]]
      

@@ -20,7 +20,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            
+            cd ../
             cd /var/www/my-project || exit 1
 
             git fetch --all --prune

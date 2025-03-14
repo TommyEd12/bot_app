@@ -27,6 +27,6 @@ jobs:
             git reset --hard origin/master  # Принудительный сброс [[10]]
             git pull origin master
 
-            docker compose down
-            docker compose up 
+            docker-compose down
+            docker-compose up 
      

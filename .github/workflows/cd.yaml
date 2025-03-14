@@ -24,8 +24,8 @@ jobs:
             cd /var/www/bunA || exit 1
 
             git fetch --all --prune
-            git reset --hard /master  # Принудительный сброс [[10]]
-            git pull master
+            git reset --hard origin/master  # Принудительный сброс [[10]]
+            git pull origin master
 
             docker compose down
             docker compose up -d --build  # [[3]][[6]]

@@ -104,7 +104,7 @@ const app = new Elysia({ prefix: "/api" })
     try {
       console.log("req");
       const response = await ethplorerInstance.get("/getTop", {
-        params: { apiKey: "freekey" },
+        params: { apiKey: process.env.API_KEY },
       });
       const tokenList: Token[] = response.data.tokens;
       for (const token of tokenList) {

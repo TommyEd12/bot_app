@@ -20,15 +20,13 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            cd /var/www/bunApp
+            cd /var/www/bunApp  exit 1
 
-            # Ensure git remote is set up correctly (SSH URL)
-            git remote set-url origin git@github.com:TommyEd12/bot_app.git
-
+            # Ensure git remote is set up correctly
             git fetch --all --prune
-            git reset --hard origin/master
-            git pull origin master
+            git reset --hard origin/master  exit 1
+            git pull origin master  exit 1
 
             # Ensure Docker commands work
-            docker compose down
+            docker compose down  exit 1
             docker compose up -d --build || exit 1

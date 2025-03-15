@@ -9,7 +9,7 @@ import { schemaToken, TokenInfo } from "../../types";
 import { AuthService } from "../../services/authService";
 
 async function updateCountOpsBatch(tokens: schemaToken[]): Promise<void> {
-  //whatever
+  //whateverItTakes
   for (const token of tokens) {
     try {
       const response = await ethplorerInstance.get(

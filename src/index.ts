@@ -114,7 +114,7 @@ const app = new Elysia({ prefix: "/api" })
           .onConflictDoNothing();
         await db.insert(snapshotsTable).values({
           currencyName: token.name,
-          contract: token.address,
+          tokenContract: token.address,
           price: token.price.rate,
           volume: token.price.marketCapUsd,
           created: new Date(Date.now()),

@@ -9,7 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 export const tokensTable = pgTable("tokens", {
   id: integer().generatedAlwaysAsIdentity(),
-  contract: varchar().unique().primaryKey(),
+  contract: varchar().primaryKey(),
   name: varchar({ length: 255 }).notNull(),
 });
 export const usersTable = pgTable("users", {
@@ -19,8 +19,8 @@ export const usersTable = pgTable("users", {
 });
 export const snapshotsTable = pgTable("snapshots", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  contract: varchar().references(() => tokensTable.contract),
-  currencyName: varchar().references(() => tokensTable.name),
+  tokenContract: varchar().references(() => tokensTable.contract),
+  currencyName: varchar(),
   price: real(),
   volume: real(),
   countOps: integer(),

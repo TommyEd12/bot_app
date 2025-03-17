@@ -61,12 +61,12 @@ const app = new Elysia({ prefix: "/api" })
         .selectDistinctOn([snapshotsTable.currencyName], {
           currencyName: snapshotsTable.currencyName,
           created: snapshotsTable.created,
-          contract: snapshotsTable.contract,
+          contract: snapshotsTable.tokenContract,
           volume: snapshotsTable.volume,
           valueChange: sql<number>`
           CASE
-            WHEN LAG(${snapshotsTable.volume}) OVER (PARTITION BY ${snapshotsTable.contract} ORDER BY created) IS NULL THEN NULL
-            ELSE (${snapshotsTable.volume}::NUMERIC - LAG(${snapshotsTable.volume}) OVER (PARTITION BY ${snapshotsTable.contract} ORDER BY created))
+            WHEN LAG(${snapshotsTable.volume}) OVER (PARTITION BY ${snapshotsTable.tokenContract} ORDER BY created) IS NULL THEN NULL
+            ELSE (${snapshotsTable.volume}::NUMERIC - LAG(${snapshotsTable.volume}) OVER (PARTITION BY ${snapshotsTable.tokenContract} ORDER BY created))
           END
       `,
         })

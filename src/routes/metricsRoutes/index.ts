@@ -20,12 +20,12 @@ const metricsRoutes = new Elysia({ prefix: "/metrics" })
           .selectDistinctOn([snapshotsTable.currencyName], {
             currencyName: snapshotsTable.currencyName,
             created: snapshotsTable.created,
-            contract: snapshotsTable.contract,
+            contract: snapshotsTable.tokenContract,
             countOps: snapshotsTable.countOps,
             valueChange: sql<number>`
           CASE
-            WHEN LAG(${snapshotsTable.countOps}) OVER (PARTITION BY ${snapshotsTable.contract} ORDER BY created) IS NULL THEN NULL
-            ELSE (${snapshotsTable.countOps}::NUMERIC - LAG(${snapshotsTable.countOps}) OVER (PARTITION BY ${snapshotsTable.contract} ORDER BY created))
+            WHEN LAG(${snapshotsTable.countOps}) OVER (PARTITION BY ${snapshotsTable.tokenContract} ORDER BY created) IS NULL THEN NULL
+            ELSE (${snapshotsTable.countOps}::NUMERIC - LAG(${snapshotsTable.countOps}) OVER (PARTITION BY ${snapshotsTable.tokenContract} ORDER BY created))
           END
         `,
           })
@@ -74,7 +74,7 @@ const metricsRoutes = new Elysia({ prefix: "/metrics" })
         const snapshots = await db
           .select()
           .from(snapshotsTable)
-          .where(eq(snapshotsTable.contract, tokenAddress));
+          .where(eq(snapshotsTable.tokenContract, tokenAddress));
         if (snapshots.length === 0) {
           throw new Error("Данного адреса нет в базе данных");
         }

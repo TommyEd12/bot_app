@@ -57,7 +57,7 @@ export const userRoutes = new Elysia({ prefix: "/user" })
           userName: user.userName,
         }),
         httpOnly: true,
-        domain: "localhost",
+        domain: process.env.CORS_ORIGIN,
         maxAge: 7 * 86400,
         path: "/",
       });

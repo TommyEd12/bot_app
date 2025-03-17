@@ -13,7 +13,7 @@ import { userRequest } from "telegraf/typings/button";
 import { userRoutes } from "./routes/userRoutes";
 
 const app = new Elysia({ prefix: "/api" })
-  .use(cors({ origin: "localhost" }))
+  .use(cors({ origin: process.env.CORS_ORIGIN }))
   .get("/", () => "Hello Elysia")
   .get("/hi", () => {
     return "hello from backend";

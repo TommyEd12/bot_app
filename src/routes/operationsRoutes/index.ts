@@ -21,7 +21,7 @@ async function updateCountOpsBatch(tokens: schemaToken[]): Promise<void> {
 
       const tokenData: TokenInfo = response.data;
       await db.insert(snapshotsTable).values({
-        contract: tokenData.address,
+        tokenContract: tokenData.address,
         currencyName: tokenData.name,
         price: tokenData.price.rate,
         volume: tokenData.price.marketCapUsd,
@@ -122,7 +122,7 @@ const operationsRoutes = new Elysia({ prefix: "/operations" })
           .insert(tokensTable)
           .values({ name: tokenData.name, contract: tokenData.address });
         const res = await db.insert(snapshotsTable).values({
-          contract: tokenData.address,
+          tokenContract: tokenData.address,
           currencyName: tokenData.name,
           price: tokenData.price.rate,
           volume: tokenData.price.marketCapUsd,

@@ -30,9 +30,12 @@ export const userRoutes = new Elysia({ prefix: "/user" })
     { isSignIn: true }
   )
   .get("/addAdmin", async ({ set }) => {
-    await db
-      .insert(usersTable)
-      .values({ userName: "YeniseyAdmin", password: "yenisey1234" });
+    await db.insert(usersTable).values({
+      userName: "YeniseyAdmin",
+      password: Bun.password.hash("yenisey1234", {
+        algorithm: "bcrypt",
+      }),
+    });
     set.status = 200;
     return true;
   })

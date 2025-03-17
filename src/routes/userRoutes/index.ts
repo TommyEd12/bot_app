@@ -29,6 +29,13 @@ export const userRoutes = new Elysia({ prefix: "/user" })
     },
     { isSignIn: true }
   )
+  .get("/addAdmin", async ({ set }) => {
+    await db
+      .insert(usersTable)
+      .values({ userName: "YeniseyAdmin", password: "yenisey1234" });
+    set.status = 200;
+    return true;
+  })
   .post(
     "/login",
     async ({ jwt, cookie: { auth }, body }) => {
